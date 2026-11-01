@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<title>인외대백과 & 이그노어 페르소나 랜덤 생성기</title>
+<meta name="description" content="이그노어 세계관 인외대백과 및 페르소나 랜덤 생성기" />
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        serif: ['"Noto Serif KR"', 'Georgia', 'Batang', 'serif'],
+        sans: ['"Noto Sans KR"', 'Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Apple SD Gothic Neo"', '"Malgun Gothic"', 'sans-serif'],
+      },
+      colors: {
+        background: '#08080a',
+        foreground: '#e5dcd9',
+        card: '#121216',
+        border: 'rgba(120,30,30,0.35)',
+        muted: { DEFAULT: '#1c1b22', foreground: '#8a7472' },
+        blood: { DEFAULT: '#8a1a1a', bright: '#d92626' },
+      },
+    },
+  },
+};
+</script>
+
+<style>
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #08080a;
+    color: #e5dcd9;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: #08080a;
+    color: #e5dcd9;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  .font-serif {
+    font-family: "Noto Serif KR", Georgia, Batang, serif;
+  }
+  p, div, span, h1, h2, h3, h4, label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  
+  .glass-panel {
+    background: rgba(18, 18, 22, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(217, 38, 38, 0.28);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 12px 32px -8px rgba(0, 0, 0, 0.8);
+  }
+  
+  .glass-panel-luxury {
+    background: linear-gradient(135deg, rgba(22, 18, 22, 0.90) 0%, rgba(10, 8, 12, 0.96) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(217, 38, 38, 0.38);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 20px 50px -10px rgba(0, 0, 0, 0.95);
+  }
+
+  .blood-glow-subtle {
+    box-shadow: 0 0 25px -5px rgba(217, 38, 38, 0.3);
+  }
+
+  .text-blood-gradient {
+    background: linear-gradient(120deg, #e02828 0%, #a81c1c 50%, #520d0d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .corner-bracket {
+    position: relative;
+  }
+  .corner-bracket::before, .corner-bracket::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .corner-bracket::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid rgba(217, 38, 38, 0.6);
+    border-left: 2px solid rgba(217, 38, 38, 0.6);
+  }
+  .corner-bracket::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid rgba(217, 38, 38, 0.6);
+    border-right: 2px solid rgba(217, 38, 38, 0.6);
+  }
+  .corner-bracket:hover::before, .corner-bracket:hover::after {
+    border-color: rgba(217, 38, 38, 1);
+    width: 14px;
+    height: 14px;
+  }
+
+  @keyframes smoothFadeIn {
+    0% { opacity: 0.6; transform: translateY(2px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .fade-anim {
+    animation: smoothFadeIn 0.2s ease-out forwards;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #08080a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a1010;
+    border-radius: 3px;
+    border: 1px solid rgba(217, 38, 38, 0.2);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8a1a1a;
+  }
+
+  .nsfw-blur-overlay {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+</style>
+</head>
+<body class="min-h-screen selection:bg-blood selection:text-white py-12">
+
+<!-- Ambient Particle Canvas Background -->
+<canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-40" aria-hidden="true"></canvas>
+
+<!-- Interactive Cursor Spotlight Glow -->
+<div id="spotlight" class="fixed pointer-events-none z-0 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blood/15 blur-[120px] transition-opacity duration-500 opacity-0" aria-hidden="true"></div>
+
+<main class="relative z-10">
+<section id="encyclopedia-section" class="relative">
+  <div class="mx-auto max-w-5xl px-6">
+    
+    <!-- HEADER -->
+    <div class="text-center mb-12">
+      <p class="text-[10px] font-bold tracking-[0.5em] text-blood uppercase">EGNORE MODULE</p>
+      <h2 class="mt-3 font-serif text-3xl font-black tracking-[0.12em] md:text-4xl lg:text-5xl">SPECIES & PERSONA ARCHIVE</h2>
+      <p class="mt-2 text-xs tracking-[0.3em] text-muted-foreground uppercase">인외대백과 및 페르소나 랜덤 생성기</p>
+      <div class="mx-auto mt-5 h-px w-20 bg-gradient-to-r from-transparent via-[#d92626] to-transparent"></div>
+    </div>
+
+    <!-- ENCYCLOPEDIA BOX -->
+    <div class="mb-10 glass-panel-luxury p-5 md:p-6 corner-bracket border-blood/60 blood-glow-subtle transition-all">
+      <!-- Header Toggle -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-blood/40 pb-4">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-[0.4em] text-blood-bright block mb-1">
+            CLASSIFIED SPECIES ARCHIVE
+          </span>
+          <h3 class="font-serif text-2xl md:text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
+            <span>📖</span> 인외대백과
+          </h3>
+        </div>
+        <button id="btn-toggle-encyclopedia" type="button" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-blood bg-blood/20 px-5 py-2.5 text-xs font-bold tracking-widest text-blood-bright uppercase hover:bg-blood hover:text-white transition-all">
+          <span id="encyclopedia-toggle-icon">▼</span>
+          <span id="encyclopedia-toggle-txt">인외대백과 열기 (<span id="wiki-total-count">0</span>종)</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Content -->
+      <div id="encyclopedia-content" class="hidden pt-5 transition-all">
+        <p class="text-xs text-muted-foreground mb-4 leading-relaxed">
+          이그노어 도시와 캡슐 제약 관할 구역 내에서 파악된 인외 종족 도감입니다. 각 종족의 특성을 확인하고 원 클릭으로 생성기에 적용할 수 있습니다.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="mb-5 relative">
+          <input type="text" id="wiki-search" placeholder="종족명 또는 설명 키워드 검색 (예: 몽마, 뱀파이어, 환각, 슬라임)..." class="w-full bg-[#08080a] border border-border/80 px-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-blood focus:outline-none transition-colors rounded">
+        </div>
+
+        <!-- Grid Cards -->
+        <div id="wiki-grid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 max-h-[450px] overflow-y-auto pr-2">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATOR HEADER & TOGGLE -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.5em] text-blood-bright flex items-center gap-2 mb-1">
+          <span class="inline-block h-1.5 w-1.5 bg-blood-bright rounded-full animate-ping"></span>
+          CLASSIFIED DOSSIER EXTRACTOR
+        </p>
+        <h3 class="font-serif text-2xl font-black md:text-3xl lg:text-4xl tracking-tight">
+          이그노어 <span class="text-blood-gradient">페르소나 랜덤 생성기</span>
+        </h3>
+      </div>
+    </div>
+
+    <!-- GENERATOR CONTAINER -->
+    <div id="generator-container" class="transition-all">
+      <!-- CONTROL PANEL -->
+      <div class="glass-panel-luxury p-6 corner-bracket mb-8 blood-glow-subtle">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-border/50 pb-5 mb-5">
+          <!-- Options Checkboxes -->
+          <div class="flex flex-wrap items-center gap-2.5 text-xs text-foreground/80 w-full lg:w-auto">
+            <span class="font-bold tracking-wider text-blood-bright text-[11px] uppercase mr-1">⚡ 옵션 & 추출 항목:</span>
+            
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-code-name" checked class="accent-blood rounded">
+              <span class="text-[11px]">코드명</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-gen-species" checked class="accent-blood rounded">
+              <span class="text-[11px]">인외 종족</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-gen-job" checked class="accent-blood rounded">
+              <span class="text-[11px]">소속 및 직업</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-gen-trait" checked class="accent-blood rounded">
+              <span class="text-[11px]">외형 & 배경 설정</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-gen-nsfw" checked class="accent-blood rounded">
+              <span class="text-[11px]">NSFW 설정</span>
+            </label>
+
+            <label class="flex items-center gap-1.5 cursor-pointer bg-[#08080a]/60 border border-border/60 px-2.5 py-1.5 rounded hover:border-blood transition-colors">
+              <input type="checkbox" id="opt-nsfw-blur" checked class="accent-blood rounded">
+              <span class="text-[11px]">NSFW 블러</span>
+            </label>
+
+            <button id="history-toggle" type="button" class="border border-blood bg-[#08080a]/90 px-3 py-1.5 text-[11px] font-bold tracking-wider text-blood-bright uppercase hover:bg-blood hover:text-white transition-all rounded">
+              📜 기록 (<span id="history-count">0</span>)
+            </button>
+          </div>
+
+          <!-- Lock Badge Status -->
+          <div class="flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-widest self-end lg:self-auto">
+            <span>고정 상태:</span>
+            <span id="lock-status-badge" class="border border-border/50 bg-[#08080a] px-2 py-0.5 text-blood-bright font-bold">ALL UNLOCKED</span>
+          </div>
+        </div>
+
+        <!-- Main Extract Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 items-center justify-center">
+          <button id="btn-generate" type="button" class="w-full sm:w-auto group relative inline-flex items-center justify-center gap-3 border border-blood bg-blood/20 px-10 py-4 text-sm font-black tracking-[0.3em] text-foreground uppercase hover:bg-blood hover:text-white hover:blood-glow transition-all corner-bracket shadow-2xl active:scale-98">
+            <span class="text-base group-hover:rotate-180 transition-transform duration-500">🎲</span>
+            <span id="btn-gen-text">선택 항목 무작위 추출</span>
+            <span class="transition-transform group-hover:translate-x-1">→</span>
+          </button>
+
+          <button id="btn-copy-all" type="button" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-blood/60 bg-[#08080a]/90 px-6 py-4 text-xs font-bold tracking-[0.2em] text-blood-bright uppercase hover:bg-blood hover:text-white transition-all corner-bracket">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>결과 전체 복사</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DOSSIER RESULT CARD -->
+      <div id="dossier-card" class="glass-panel-luxury p-6 md:p-8 corner-bracket border-blood relative transition-all duration-300">
+        
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-blood/40 pb-4 mb-5">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-block h-2.5 w-2.5 rounded-full bg-blood-bright animate-pulse"></span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase">RESTRICTED DOSSIER</span>
+          </div>
+          <div class="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase" id="dossier-timestamp">
+            21XX.00.00 00:00
+          </div>
+        </div>
+
+        <!-- CODE NAME HIGHLIGHT BOX -->
+        <div class="mb-6 p-3.5 bg-[#08080a] border border-blood/60 rounded flex flex-wrap items-center justify-between gap-2 shadow-inner">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-black tracking-widest text-blood-bright uppercase flex items-center gap-1.5">
+              <span>🏷️</span> 식별 코드명:
+            </span>
+            <span id="dossier-code" class="font-serif text-base md:text-lg font-black tracking-wider text-foreground">
+              SUBJECT #EG-0000-X
+            </span>
+          </div>
+          <button type="button" data-reroll="code" class="reroll-btn text-[10px] border border-blood/40 px-2.5 py-1 text-blood-bright hover:bg-blood hover:text-white transition-colors">
+            🔄 코드명 변경
+          </button>
+        </div>
+
+        <!-- Profile Grid (4 Core Fields) -->
+        <div class="grid gap-6 md:grid-cols-2">
+
+          <!-- Field 1: Species (인외 종족) -->
+          <div class="glass-panel p-5 corner-bracket relative group border-border/60 hover:border-blood transition-colors">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold tracking-[0.3em] text-blood-bright uppercase flex items-center gap-1.5">
+                <span>🧬</span> 인외 종족 (SPECIES)
+              </span>
+              <div class="flex items-center gap-1">
+                <button type="button" data-lock="species" class="lock-btn text-[10px] border border-border/40 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-colors">🔒 <span class="lock-txt">고정</span></button>
+                <button type="button" data-reroll="species" class="reroll-btn text-[10px] border border-blood/40 px-2 py-0.5 text-blood-bright hover:bg-blood hover:text-white transition-colors">🔄 리롤</button>
+              </div>
+            </div>
+            <div id="val-species" class="font-serif text-lg font-bold text-foreground leading-snug pt-1">- 생성 중 -</div>
+          </div>
+
+          <!-- Field 2: Occupation (소속 및 직업) -->
+          <div class="glass-panel p-5 corner-bracket relative group border-border/60 hover:border-blood transition-colors">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold tracking-[0.3em] text-blood-bright uppercase flex items-center gap-1.5">
+                <span>🏢</span> 소속 및 직업 (OCCUPATION)
+              </span>
+              <div class="flex items-center gap-1">
+                <button type="button" data-lock="job" class="lock-btn text-[10px] border border-border/40 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-colors">🔒 <span class="lock-txt">고정</span></button>
+                <button type="button" data-reroll="job" class="reroll-btn text-[10px] border border-blood/40 px-2 py-0.5 text-blood-bright hover:bg-blood hover:text-white transition-colors">🔄 리롤</button>
+              </div>
+            </div>
+            <div id="val-job" class="font-serif text-lg font-bold text-foreground leading-snug pt-1">- 생성 중 -</div>
+          </div>
+
+          <!-- Field 3: Profile & Lore (캐릭터 외형 & 배경 설정) -->
+          <div class="glass-panel p-5 corner-bracket relative group border-border/60 hover:border-blood transition-colors md:col-span-2">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold tracking-[0.3em] text-blood-bright uppercase flex items-center gap-1.5">
+                <span>📝</span> 캐릭터 외형 & 배경 설정 (PROFILE)
+              </span>
+              <div class="flex items-center gap-1">
+                <button type="button" data-lock="trait" class="lock-btn text-[10px] border border-border/40 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-colors">🔒 <span class="lock-txt">고정</span></button>
+                <button type="button" data-reroll="trait" class="reroll-btn text-[10px] border border-blood/40 px-2 py-0.5 text-blood-bright hover:bg-blood hover:text-white transition-colors">🔄 리롤</button>
+              </div>
+            </div>
+            <p id="val-trait" class="text-xs md:text-sm text-foreground/90 leading-relaxed pt-1 whitespace-pre-line">- 생성 중 -</p>
+          </div>
+
+          <!-- Field 4: NSFW Lore & Intimate Traits (NSFW 설정) -->
+          <div class="glass-panel p-5 corner-bracket relative group border-blood/50 hover:border-blood transition-colors md:col-span-2 bg-[rgba(20,10,12,0.65)]">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold tracking-[0.3em] text-blood-bright uppercase flex items-center gap-1.5">
+                <span>🔞</span> NSFW / 성적 특성 설정 (ADULT DOSSIER)
+              </span>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btn-toggle-nsfw-view" class="text-[10px] border border-blood/40 bg-[#08080a] px-2 py-0.5 text-blood-bright hover:bg-blood hover:text-white transition-colors">
+                  👁️ <span id="nsfw-view-label">모자이크 해제</span>
+                </button>
+                <button type="button" data-lock="nsfw" class="lock-btn text-[10px] border border-border/40 px-2 py-0.5 text-muted-foreground hover:text-foreground transition-colors">🔒 <span class="lock-txt">고정</span></button>
+                <button type="button" data-reroll="nsfw" class="reroll-btn text-[10px] border border-blood/40 px-2 py-0.5 text-blood-bright hover:bg-blood hover:text-white transition-colors">🔄 리롤</button>
+              </div>
+            </div>
+
+            <div class="relative min-h-[70px] mt-2">
+              <p id="val-nsfw" class="text-xs md:text-sm text-foreground/90 leading-relaxed whitespace-pre-line">- 생성 중 -</p>
+
+              <div id="nsfw-overlay" class="absolute inset-0 nsfw-blur-overlay bg-[#08080a]/85 border border-blood/30 flex flex-col items-center justify-center p-3 text-center transition-all duration-300 cursor-pointer">
+                <span class="text-xl mb-1">🔞</span>
+                <p class="text-xs font-bold text-blood-bright tracking-wider">RESTRICTED NSFW CONTENT</p>
+                <p class="text-[10px] text-muted-foreground mt-0.5">클릭하거나 '모자이크 해제' 버튼을 눌러 확인하세요.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Controls -->
+        <div class="mt-6 border-t border-border/40 pt-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="text-[10px] text-muted-foreground tracking-widest uppercase">
+            * EGNORE RESEARCH FACILITY · PERSONNEL DATABASE
+          </div>
+          <button id="btn-save-history" type="button" class="border border-border/60 bg-[#08080a] px-3 py-1.5 text-[11px] font-bold text-foreground hover:border-blood transition-all">
+            💾 이 프로필 저장하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<!-- PERSONA GENERATOR HISTORY MODAL -->
+<div id="history-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+  <div id="history-backdrop" class="fixed inset-0 bg-[#08080a]/90 backdrop-blur-md"></div>
+  <div class="relative w-full max-w-2xl glass-panel-luxury border border-blood blood-glow corner-bracket p-6 z-10 max-h-[85vh] flex flex-col">
+    <div class="flex items-center justify-between border-b border-blood/40 pb-3 mb-4">
+      <h3 class="font-serif text-lg font-bold text-blood-bright flex items-center gap-2">
+        <span>📜</span> 페르소나 생성 기록
+      </h3>
+      <button id="history-close" type="button" class="text-xs border border-blood/40 px-2 py-1 text-muted-foreground hover:text-foreground">✕ 닫기</button>
+    </div>
+
+    <div id="history-list" class="overflow-y-auto space-y-3 pr-1 flex-1 text-xs">
+      <p class="text-center text-muted-foreground py-8">저장되거나 생성된 프로필 기록이 없습니다.</p>
+    </div>
+
+    <div class="mt-4 border-t border-border/40 pt-3 flex justify-between items-center text-xs">
+      <button id="btn-clear-history" type="button" class="text-muted-foreground hover:text-blood-bright text-[11px]">기록 전체 삭제</button>
+      <span class="text-[10px] text-muted-foreground">최대 20개까지 저장됩니다.</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden glass-panel border border-blood blood-glow rounded-full px-6 py-2.5 text-xs font-bold tracking-wider text-blood-bright shadow-2xl transition-all duration-300">
+  <span id="toast-msg">복사되었습니다!</span>
+</div>
+
+<script>
+// Spotlight
+(function initSpotlight() {
+  const spotlight = document.getElementById('spotlight');
+  if (!spotlight) return;
+  document.addEventListener('mousemove', (e) => {
+    spotlight.style.left = e.clientX + 'px';
+    spotlight.style.top = e.clientY + 'px';
+    spotlight.style.opacity = '1';
+  });
+  document.addEventListener('mouseleave', () => {
+    spotlight.style.opacity = '0';
+  });
+})();
+
+// Ambient Particles
+(function initParticles() {
+  const canvas = document.getElementById('particle-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const particles = Array.from({ length: 40 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    r: Math.random() * 1.5 + 0.5,
+    speedY: - (Math.random() * 0.35 + 0.1),
+    alpha: Math.random() * 0.5 + 0.2
+  }));
+
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach(p => {
+      p.y += p.speedY;
+      if (p.y < 0) {
+        p.y = height;
+        p.x = Math.random() * width;
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(217, 38, 38, ${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(render);
+  }
+  render();
+})();
+
+function playSound(type) {}
+
+const encyclopediaData = [
+  { name: "몽마 / 서큐버스 혼혈 (Succubus Hybrid)", desc: "타인의 성기, 정기 및 감정을 먹고 사는 인외. 몽환적인 유혹 호르몬을 배출하며 각인 피임 인장이 주로 새겨짐." },
+  { name: "몽마 / 인큐버스 혼혈 (Incubus Hybrid)", desc: "상대방의 꿈속에 침투하거나 강한 자극으로 정신을 나른하게 마비시키는 성적 특화 혼혈종." },
+  { name: "맥 (Baku - 악몽 식인종)", desc: "인간과 인외의 고통스러운 악몽을 주식으로 삼음. 캡슐 제약의 악몽 추출기 가동 시 원료 수거에 핵심적 역할을 함." },
+  { name: "듀라한 (Dullahan - 목 분리 체질)", desc: "목과 본체가 분리되는 기이한 생체 구조를 지님. 벨벳 초커나 고강도 가죽 하네스로 상처 부위를 은폐함." },
+  { name: "삼족오 (Three-Legged Crow - 태양 환각 수인)", desc: "태양 마력과 흑염을 다루는 요조 수인. 밤이 되면 시력이 저하되지만 고농도 약물 환각제에 완벽 내성을 가짐." },
+  { name: "진혈 흡혈귀 (Pureblood Vampire)", desc: "타인의 혈액과 체액을 직접 흡수해야 생존함. 고귀한 상층부 가문 출신이 많으나 혈액 의존증 트라우마를 가짐." },
+  { name: "반혈 뱀파이어 (Dhampir Hybrid)", desc: "인간과 흡혈귀의 혼혈로, 햇빛에 내성이 있지만 불완전한 혈액 충동으로 인해 BAAD 약물에 자주 의존함." },
+  { name: "구미호 / 천호 (Nine-Tailed Fox)", desc: "아홉 개의 영적인 꼬리와 환술을 다루는 미형의 인외. 엠비션 구역의 대형 정보상 및 카지노 실세로 활동." },
+  { name: "흑뱀 수인 (Serpent Beastkin)", desc: "체액과 침에 마비성 미약 성분이 섞여 있음. 매끄러운 비늘 피부와 유연한 신체로 암살 및 밀수에 능함." },
+  { name: "슬라임 / 변형 의사체 (Polymorphic Slime)", desc: "자유자재로 형태를 바꾸는 점성 유기체. 연구실 폐기물 처리나 불법 잠입 및 구속 유희에 특화됨." },
+  { name: "지시귀 / 리치 스펙터 (Lich Specter)", desc: "시체와 마법 인장에 지배받는 불사 종족. 체온이 극도로 낮으며 아이테 교단의 죽음 구원의 의식에 자주 동원됨." },
+  { name: "사신 / 영혼 인도자 (Grim Reaper)", desc: "죽어가는 영혼의 잔재를 수거함. 피를 접촉하면 강한 충동을 느끼며 목에 사형수 전용 제어 장치가 장착됨." },
+  { name: "환각 나비 요괴 (Hallucinatory Butterfly)", desc: "날개 가루와 포자로 타인의 대뇌에 화려한 환각을 심음. 불법 클럽의 환각 디제이나 바텐더로 인기 있음." },
+  { name: "백적 늑대 수인 (White/Red Wolf)", desc: "강인한 체력과 거친 야성 본능을 지님. 제7특수진압군 용병이나 사설 경호업체의 핵심 전력." },
+  { name: "원혼 감옥 거구 인외 (Haunted Husk)", desc: "거대한 단단한 체구에 수많은 원혼이 갇혀 있음. 머드 구역 Slum가의 고된 노동과 시체 처리를 전담." },
+  { name: "인조 메카닉 호문쿨루스 (Synthetic Homunculus)", desc: "캡슐 제약의 불법 생체 연금술로 탄생한 기계-유기체 복합체. 정기적인 보랏빛 진통제 투여가 필수적." },
+  { name: "피염 마인 (Flame Demon)", desc: "체온이 수직 상승하며 발정 시 몸 주변에 붉은 불꽃과 열기가 자욱해짐. 강렬한 지배욕의 소유자." },
+  { name: "서리 가고일 (Frost Gargoyle)", desc: "돌처럼 단단하고 서늘한 피부를 지님. 감정이 격해지면 피부가 서리 결정체로 뒤덮이며 강인한 내구성을 가짐." },
+  { name: "가시 장미 요정 (Thorn Rose Fey)", desc: "피부와 혈액에서 달콤하고 독한 장미 향 약물이 분비됨. 스킨십을 가할수록 상대방을 약물 중독 상태로 유도." },
+  { name: "그림자 스펙터 (Shadow Mimic)", desc: "타인의 그림자 속에 숨어 도청과 암살을 수행함. 시각을 차단당했을 때 성적 흥분이 가중되는 취향 보유." },
+  { name: "박쥐 / 음파 수인 (Bat Beastkin)", desc: "초음파로 타인의 심장박동과 거짓말을 파악함. 어두운 밀실이나 밤 환경에서 본능이 거칠게 일어남." },
+  { name: "몽환 젤리체 (Ethereal Jelly Being)", desc: "반투명하게 빛나는 물결 형태 피부를 지님. 물리적 충격을 유연하게 흡수하며 부드러운 스킨십에 민감." },
+  { name: "심해 크라켄 수인 (Kraken Beastkin)", desc: "강력한 악력과 촉수 형태의 인외 신체 보유. 엠비션 지하 카지노 및 밀항선 전담 파수꾼." },
+  { name: "타락 천사 / 낙인종 (Fallen Angel)", desc: "과거 신성한 피를 가졌으나 캡슐 제약의 약물에 오염된 종. 검은 날개와 가슴의 붉은 낙인 타투가 특징." },
+  { name: "환영 세이렌 (Phantom Siren)", desc: "목소리와 한숨 소리만으로 타인의 이성을 마비시키고 환각에 빠뜨림. 중앙특수마약수사국의 비밀 요원." },
+  { name: "각성 상급 악마 (Awakened Archdemon)", desc: "압도적인 지배욕과 마력을 보유한 상층부 악마. 각인 피임 스탬프를 가슴 한가운데에 단단히 박아둠." },
+  { name: "주술 저주 인형 (Enchanted Doll)", desc: "관절이 기계 및 주술 사슬로 연결된 인형체. 타인의 명령과 구속에 복종할 때 쾌감을 느끼는 성향." },
+  { name: "사막 전갈 수인 (Scorpion Beastkin)", desc: "꼬리 독침에 자극성 치명 독소 및 강렬한 발정 성분을 품음. 언더캡슐 카르텔의 위협적인 용병." },
+  { name: "수면 가스 유기체 (Gaseous Organism)", desc: "몸에서 상시 나른한 수면 가스를 배출함. 주변 사람들을 기절시키거나 환각 상태에서 관계를 가짐." },
+  { name: "흑표범 수인 (Black Panther)", desc: "은밀한 야간 추적과 스피드에 특화됨. 가죽 하네스를 즐겨 착용하며 연인의 목덜미를 물어뜯는 독점욕." },
+  { name: "고대 드래곤 후예 (Ancient Dragonkin)", desc: "단단한 비늘과 뿔을 지닌 단단한 거구. 정복욕이 강해 상대의 몸 전체에 자신의 인외 자국을 남김." },
+  { name: "심해 야광 해파리 수인 (Bioluminescent Jellyfish)", desc: "어둠 속에서 영롱한 보랏빛으로 발광함. 미세한 마찰에도 자지러지는 민감성 피부 보유." },
+  { name: "거미 인외 (Arachne)", desc: "마력 사슬 및 끈적한 점성 실을 분비하여 상대를 포획하고 구속하는 지배적인 밤의 사냥꾼." },
+  { name: "몽환의 뿔 사슴 수인 (Cervine Beastkin)", desc: "머리의 뿔을 만지면 극심한 자극을 느낌. 겉으로는 부드럽고 다정하지만 침대 위에서는 돌변." },
+  { name: "까마귀 환각 수인 (Raven Illusionist)", desc: "칠흑의 깃털과 환각 마법으로 타인의 시야를 차단함. 안대로 시각을 가린 채 스킨십을 나누는 취향." },
+  { name: "나방 환각 인외 (Silk Moth)", desc: "빛과 약물 향에 매료되는 인외. 몸에서 날리는 보랏빛 포자가 상대를 자극적인 발정 상태로 유도." },
+  { name: "설녀 / 빙염종 (Frost Siren)", desc: "피부 체온이 차갑고 서리가 내림. 타인의 뜨거운 정기와 체온을 흡수해야 생명력을 유지함." },
+  { name: "지네 수인 (Centipede Beastkin)", desc: "수많은 인외 신체 자극점을 가진 기이한 구조. 상대의 온몸을 얽어매는 억센 스킨십 성향." },
+  { name: "독사 수인 (Viper Beastkin)", desc: "송곳니에 마비독을 머금음. 치명적인 유혹의 소유자로 입맞춤 한 번으로 상대를 무력화시킴." },
+  { name: "오염된 엘프 (Corrupted Elf)", desc: "과거 고결했으나 BAAD 약물 중독으로 타락함. 캡슐 제약 연구실에서 비밀 약물을 조제함." },
+  { name: "도깨비 / 뇌전 마인 (Thunder Dokkaebi)", desc: "신체 접촉 시 미세한 뇌전 전류가 흘러 상대의 신경을 자극함. 화끈하고 호쾌한 거친 성격." },
+  { name: "바질리스크 (Basilisk - 석화안)", desc: "시선이 닿는 상대를 순간 마비시킴. 안대나 선글라스를 착용하여 자신의 안광을 겨우 통제함." },
+  { name: "나하슈 / 환상 뱀종 (Phantom Naga)", desc: "하반신이 긴 뱀의 형태. 상대를 칭칭 감아쥐고 정기를 빠아먹는 유연하고 집요한 스킨십." },
+  { name: "몽환 의식 히드라 (Ethereal Hydra)", desc: "복수의 영혼과 감각을 공유하는 변종 인외. 끊임없이 타인의 정기와 감정을 갈구함." },
+  { name: "영혼 포식자 (Soul Eater)", desc: "타인의 고통, 악몽, 성적 절정에서 나오는 영혼의 에너지를 섭취함. 아이테 교단의 이단 심문관." },
+  { name: "가시나무 골렘 의사체 (Brambles Golem)", desc: "가시나무 덩굴 형태의 인외 피부. 가학적 스킨십이나 구속 관계에서 거친 안도감을 느낌." },
+  { name: "메두사 수인 (Gorgon Beastkin)", desc: "머리카락이 미세하게 움직이는 뱀 형태. 상대가 자신의 눈을 똑바로 바라볼 때 높은 정복감을 얻음." },
+  { name: "변종 시체 인형 (Necrotic Marionette)", desc: "주술 인장이 새겨진 시체 형태. 통증을 느끼지 못해 무제한의 거친 자극을 받아내는 체질." },
+  { name: "그림자 악마 (Umbral Demon)", desc: "빛이 닿지 않는 어둠 속에서 마력이 증폭됨. 방 안의 불을 모두 끄고 암흑 속에서 스킨십을 나눔." },
+  { name: "환상 맥 / 서큐버스 혼혈 (Baku-Succubus Cross)", desc: "악몽 흡수와 정기 섭취 특성이 모두 발달한 변종 혼혈. 캡슐 제약의 최우선 관찰 피험자." },
+  { name: "사막 자칼 수인 (Anubis Jackal)", desc: "죽은 자의 피와 정기를 인도함. 고전적인 충성심과 강한 사디즘 성향이 공존하는 인외." },
+  { name: "환각 버섯 포자 인외 (Spore Mycelium)", desc: "접촉하는 피복에 은은한 환각 미약 포자를 묻힘. 슬럼가 암시장의 비밀 미약 공급책." },
+  { name: "불사조 낙인 수인 (Phoenix Descendant)", desc: "절정에 다다르면 몸 전체가 붉은 화염처럼 뜨거워짐. 죽지 않는 강인한 생명력으로 밤새 몰아붙임." },
+  { name: "카멜레온 가상 수인 (Chameleon Camouflage)", desc: "주변 환경과 피부색을 완벽히 동화시킴. 은밀한 시각 차단 상태에서 관능적인 장난을 즐김." },
+  { name: "사마귀 인외 (Mantis Bladekin)", desc: "날카로운 날붙이 형태의 손톱 보유. 상대의 몸에 살짝 자국을 내며 흥분하는 가학적 성향." },
+  { name: "전기 뱀장어 수인 (Electric Eel)", desc: "체액과 정액에 감전 효과를 내는 마력을 포함함. 스킨십 한 번으로 상대의 전신을 찌릿하게 만듦." },
+  { name: "몽유병 수면체 (Somnambulist Entity)", desc: "잠든 상태에서도 본능적으로 인외 발정 활동을 수행함. 기상 시 자신이 한 일을 기억하지 못함." },
+  { name: "변형 원체 괴생물 (Polymorphic Abomination)", desc: "정체불명의 아몰퍼스 생체 구조. 상대의 취향에 맞춰 신체 형태를 즉석 변형시킬 수 있음." },
+  { name: "환각 장미 마인 (Rose Demon)", desc: "가시 자극과 달콤한 약물 향으로 연인을 사로잡음. 캡슐 제약 신약 개발팀의 비공식 마스코트." },
+  { name: "몽환의 바다 수인 (Triton Hybrid)", desc: "체액이 마르지 않으며 피부가 항상 촉촉하고 나른함. 연인을 물속으로 끌어들이듯 집요하게 몰아붙임." }
+];
+
+const speciesList = encyclopediaData.map(d => d.name);
+
+const jobList = [
+  "[캡슐 제약] 연구개발부 1팀 책임연구원 (신약 BAAD 제조)",
+  "[언더캡슐] 지하 불법 밀수 및 약물 유통 담당",
+  "[캡슐 제약] 인사총무팀 보안 감찰관",
+  "[언더캡슐] 머드 구역 악몽 추출기 가동 테크니션",
+  "[머드 구역] 악몽 추출 아르바이트생 (체질 특이자)",
+  "[중앙특수마약수사국] BAAD 전담 비밀 수사관",
+  "[이그노어 경찰본부] 엠비션 관할 뇌물 수수 부패경찰",
+  "[제7특수진압군] 머드 구역 정기 청소부대 특수 용병",
+  "[엠비션 구역] 블랙마켓 불법 약물 브로커",
+  "[센터센서 국립병원] 인외 임상시험 비밀 관리자",
+  "[종족관리처] 인외 피임마법 각인 및 혼인계약 심사관",
+  "[아이테 교] 고통 구원교단 비밀 사제",
+  "[엠비션 구역] 지하 카지노 딜러 겸 VIP 정보상",
+  "[머드 구역] 슬럼가 해커 & 보안망 도청업자",
+  "[캡슐 제약] 물류배송팀 야간 특별 수송 기사",
+  "[엠비션 구역] 고급 바텐더 겸 독약 조제사",
+  "[센터센서] 대기업 회장 비밀 인외 보디가드",
+  "[이그노어] 지하 밀투기장 챔피언 겸 약물 테스트체",
+  "[언더캡슐] 원료 정제실 시체 처리 담당자",
+  "[엠비션 구역] 불법 장기/장기 마법 거래상",
+  "[아이테 교] 악몽 흡수 기도의식 전담 신자",
+  "[머드 구역] 슬럼가 야매 인외 수술 의사",
+  "[캡슐 제약] 대외비 문서 파쇄 및 증거 인멸 요원",
+  "[종족관리처] 인외 수배자 추적 수사관",
+  "[엠비션 구역] 불법 클럽 환각제 디제이",
+  "[중앙특수마약수사국] 캡슐 제약 잠입 스파이",
+  "[언더캡슐] 연구용 인외 피험자 모집 브로커",
+  "[센터센서] 정치인 전용 비밀 심리상담사",
+  "[머드 구역] 폐기 약물 정제 자경단원",
+  "[캡슐 제약] 대표이사 직속 특수 처리반원",
+  "[엠비션 구역] 인외 전용 사설 경호업체 소장",
+  "[언더캡슐] 비밀 배송선 선장",
+  "[센터센서] 국유 연구소 파견 인외 기술자",
+  "[아이테 교] 수녀 원장 직속 성물 관리자",
+  "[엠비션 구역] 환각 유흥업소 실장",
+  "[캡슐 제약] 홍보팀 위장 인플루언서",
+  "[머드 구역] 폐기물 처리장 감시원",
+  "[종족관리처] 혼혈종 인외 등록 담당관",
+  "[중앙특수마약수사국] 감식반 약학 전문 분석관",
+  "[제7특수진압군] 특수 중화기 중대장",
+  "[이그노어 경찰본부] 머드 구역 경계선 경비 대장",
+  "[언더캡슐] 보라색 진통제 암시장 경매사",
+  "[센터센서 국립병원] 정신건강의학과 비밀 과장",
+  "[엠비션 구역] 타투이스트 겸 마법 인장 각인사",
+  "[머드 구역] 고아원 위장 악몽 추출 수거책",
+  "[캡슐 제약] 신약2팀 임상 데이터 조작원",
+  "[아이테 교] 이단 심문관",
+  "[엠비션 구역] 심야 명품 보석 및 장물 거래상",
+  "[종족관리처] 피임 마법 재각인 전담법사",
+  "[제7특수진압군] 화학전 특수부대 하사"
+];
+
+const traitList = [
+  "키 188cm, 창백한 흰 피부에 눈가에 짙은 다크서클을 달고 산다. 가죽 하네스와 무채색 롱코트 착용.\n[배경] 언더캡슐에서 실수로 금지된 약물 제조법을 알아버린 뒤 목숨을 건 비밀 계약을 맺었다.",
+  "키 205cm, 굳건한 체격 뒤에 지독한 독설가. 붉게 빛나는 눈동자와 특수 제어용 초커 착용.\n[배경] 센터센서 국립병원 출신이나 약물 비리 사건에 휘말려 엠비션 구역으로 쫓겨났다.",
+  "체온이 정상인보다 현저히 낮아 스킨십을 기피하지만, 본능적으로 타인의 온기를 갈구함.\n[배경] 머드 구역 출신으로 불법 악몽 추출기에 오래 노출되어 영구 후유증을 앓고 있다.",
+  "나긋나긋한 정중한 존댓말을 쓰지만 손에는 항상 나이프나 주사기를 숨기고 있다.\n[배경] 캡슐 제약 인사팀의 밀정을 겸하고 있으며 동료들의 일탈을 일지에 적어 보고한다.",
+  "화려한 가죽 하네스와 구속용 제어기를 착용. 인외 특유의 본능을 누르려 애쓴다.\n[배경] 종족관리처의 수배 대상이었으나 캡슐 제약의 보호를 받는 대신 불법 노동을 제공 중이다.",
+  "관능적이고 낮게 깔린 목소리. 시도 때도 없이 하품을 하지만 눈빛은 맹수처럼 날카롭다.\n[배경] BAAD의 원료 정제 시 발생하는 환각 가스에 내성이 있어 특수 직무에 배치되었다.",
+  "타인의 악몽이나 고통스러운 기억을 볼 때 입꼬리가 기괴하게 올라가는 습관이 있다.\n[배경] 아이테 교단에서 이단으로 추방당한 후 언더캡슐 불법 카르텔에 합류했다.",
+  "손끝에서 미세한 가스나 전기가 흘러나와 장갑을 절대로 벗지 않는다.\n[배경] 제7특수진압군 시절 동료들을 잃고 엠비션 구역의 약물 중독자가 되었다.",
+  "선량하고 다정한 동료처럼 보이지만, 목적을 위해서라면 서슴없이 타인을 임상실험체로 삼는다.\n[배경] 캡슐 제약 창립 멤버 집안 출신으로 금수저지만 심각한 도덕 관념 결여 상태다.",
+  "극심한 불면증으로 눈이 충혈되어 있으며, 악몽 추출 원액 냄새만 맡아도 기절하듯 잠에 든다.\n[배경] 엠비션 암시장에서 자신만의 독자적인 인외 조합 약물을 밀조하고 있다.",
+  "몸 전체에 붉은색 마법 문신이 새겨져 있으며 감정이 격해지면 문신이 수놓듯 밝게 빛난다.\n[배경] 종족관리처에 강제로 등록된 피임 및 능력 제어 마법 인장을 가지고 있다.",
+  "차분하고 나른한 인상이지만 머드 구역 청소 소리가 나면 극도로 민감하고 호전적으로 변한다.\n[배경] 과거 제7특수진압군의 머드 구역 투입 때 생존한 몇 안 되는 현지 주민 출신.",
+  "약물 향이 배어있는 향수를 짙게 뿌리고 다니며, 타인의 냄새로 거짓말 여부를 간파한다.\n[배경] 중앙특수마약수사국에서 캡슐 제약 내부로 파견한 위장 신분 요원.",
+  "유리체처럼 투명하거나 붉게 빛나는 눈동자를 가짐. 타인의 피를 보면 미세하게 떨린다.\n[배경] 언더캡슐의 3질병 임상시험실에서 살아남아 신체 일부가 특수 변이되었다.",
+  "언제나 여유로운 웃음을 짓고 있으나 한쪽 귀에 특수 도청 이어폰을 24시간 끼고 산다.\n[배경] 엠비션 암시장 거물 정보상과 비밀 연락망을 유지하며 이중간첩 놀이를 즐긴다.",
+  "말수가 적고 무뚝뚝하지만 부탁한 일은 완벽하게 처리하는 츤데레 성향.\n[배경] 센터센서 국립병원 임상실험실에서 탈출한 후 캡슐 제약에 신분을 위조해 입사함.",
+  "언제나 미소를 머금고 있지만 눈동자는 전혀 웃고 있지 않은 소시오패스적 기질.\n[배경] 엠비션 구역의 대형 사기 사건 주동자였으나 언더캡슐 약물 유통망을 개척해 사면받음.",
+  "작은 자극에도 과도하게 놀라며 주변을 끊임없이 경계하는 극심한 불안증 보유.\n[배경] 머드 구역 아르바이트 도중 악몽 추출 기계의 폭발 사고를 눈앞에서 목격함.",
+  "돈과 약물 외에는 아무것도 믿지 않는 철저한 현실주의자이자 불신론자.\n[배경] 종족관리처 심사관들에게 뇌물을 주고 자신의 호적을 인간으로 조작하려다 실패함.",
+  "타인의 고통이나 괴로워하는 소리를 들으면 나른한 평온함을 느끼는 이상 성향.\n[배경] 아이테 교단의 비밀 의식을 집전하면서 수많은 신자들의 악몽을 직접 흡수해옴.",
+  "자신의 몸을 도구처럼 여기며 위험한 약물 임상 테스트도 아무렇지 않게 받아들임.\n[배경] 캡슐 제약 개발부의 고성능 신약 테스트체로 자원하여 장기 계약을 체결함.",
+  "매우 정중하고 도덕적인 언행을 유지하지만 불법적인 일에 망설임이 없음.\n[배경] 중앙특수마약수사국의 비리를 내부 고발하려다 오히려 모함을 받고 쫓겨남.",
+  "귀찮음이 심해 늘 의자에 기대어 빈둥거리지만 순간적인 직관과 기지는 천재적임.\n[배경] 머드 구역 슬럼가에서 혼자 독학으로 언더캡슐 중앙 서버를 해킹한 이력이 있음.",
+  "자신의 인외 종족 특성을 혐오하여 어떻게든 완벽한 인간이 되고 싶어 함.\n[배경] 캡슐 제약이 은밀히 개발 중인 '인간화 시약'의 첫 번째 비공식 테스트체.",
+  "남의 약점을 잡는 것을 즐기며 상대를 말 한두 마디로 쥐락펴락하는 심리전의 달인.\n[배경] 이그노어 경찰본부 간부들의 비리 장부를 독점하고 있어 경찰도 함부로 건드리지 못함.",
+  "모든 것에 무감각하고 건조하지만 한 번 관심이 생긴 대상에는 편집증적인 집착을 보임.\n[배경] 언더캡슐 폐기물 처리장에서 주워 온 악몽 추출 파편을 비밀리에 연구 중임.",
+  "표정 하나 바꾸지 않고 위험한 거짓말을 천연덕스럽게 뱉어내는 완벽한 연기자.\n[배경] 엠비션 카지노에서 수십억 대의 약물 거래를 중개한 베테랑 정보상.",
+  "상대의 신체 부위나 인외적 특징을 분석하는 이상한 수집가적 취미를 가짐.\n[배경] 종족관리처 승인 없이 인외 종족의 피임 인장을 해제하는 불법 시술사로 활동함.",
+  "언제나 멍하니 허공을 바라보며 혼잣말을 중얼거리는 기이한 행동 패턴.\n[배경] BAAD 약물의 원료인 악몽추출원액에 장기간 노출되어 환각과 현실을 구분하지 못함.",
+  "겉으로는 완벽한 엘리트 회사원이지만 밤에는 머드 구역의 자경단원으로 활동.\n[배경] 제7특수진압군의 무차별 슬럼가 청소 작전에 반발하여 비밀 저항 조직을 결성함."
+];
+
+const nsfwList = [
+  "약물(BAAD) 복용 시 또는 피로가 극에 달할 때 종족 특유의 강렬한 발정 호르몬이 자율신경을 지배함.\n[민감 부위] 목 뒤의 각인 부위나 뿔/꼬리 뿌리를 건드리면 극심한 쾌감과 신체 변이가 동반됨.",
+  "평소의 사나운 모습과 달리 관계 시에는 상대방에게 완벽히 통제당하는 마조히즘적 쾌감을 원함.\n[체액 특성] 체액에 미량의 마비성 환각 성분이 섞여 있어 입맞춤만으로 상대를 방심하게 만듦.",
+  "악몽 추출 원액의 향을 맡으면 이성이 마비되고 본능적인 성적 욕구가 폭발하여 타인의 체온을 탐함.\n[비밀 취향] 가죽 하네스나 구속구로 묶였을 때에만 인외로서의 깊은 안도감을 느낌.",
+  "절정에 도달하면 동공이 수축하고 체온이 급상승하며 인외 본래의 기괴하고 아름다운 신체 특성(날개, 비늘 유출)이 드러남.\n[상호작용] 상대의 거친 거부나 통제에 오히려 강한 성적 흥분을 느낌.",
+  "땀과 체액에서 캡슐 제약 특유의 몽환적인 달콤한 약물 향이 나며, 접촉한 상대를 거부할 수 없는 발정 상태로 유도함.\n[특이 반응] 쾌감이 극에 달하면 이성을 잃고 종족 고유의 가르랑거리는 울음소리를 냄.",
+  "한 번 체액을 섞은 상대의 악몽이나 정기만 선호하게 됨. 단순 유희가 아닌 생존과 영양 섭취의 수단으로 여김.\n[신체 특징] 흥분 시 피부 아래 마법 각인이 붉게 발광하며 체온이 수직 상승함.",
+  "독점욕과 지배욕이 지극히 강함. 상대의 몸에 자국을 남기거나 인외 특유의 냄새를 묻히지 않으면 성이 차지 않음.\n[잠자리 성향] 가학적인 사디즘 성향과 정성스러운 애프터케어가 공존하는 형태.",
+  "종족적 각인 피임 마법이 걸려 있어 정기 흡수 시에도 임신 염려가 없음. 때문에 상대를 무제한으로 밤새 몰아붙임.\n[민감 반응] 귓가에 낮게 깔린 한숨 소리나 칭찬에 약하며 허벅지 안쪽이 극도로 민감함.",
+  "스킨십에 민감하여 부드러운 손길에는 순해지지만, 본 게임에 들어가면 거칠고 동물적인 본능을 드러냄.\n[특수 설정] 정액이나 체액이 약물 성분과 반응하여 상대의 이성을 서서히 마비시키는 효과가 있음.",
+  "극도로 민감한 피부를 가져 조그만 마찰에도 강한 자극을 느낌. 속옷이나 옷자락이 쓸리는 것만으로도 열감이 올라옴.\n[비밀 취향] 눈을 안대로 가리거나 시각을 차단당했을 때 쾌감이 배가됨.",
+  "인외 고유의 발정기가 오면 이성이 마비되며 타인의 정기를 흡수하지 않고는 버티지 못함.\n[민감 부위] 쇄골 아래 새겨진 종족관리처의 각인 스탬프를 부드럽게 쓰다듬으면 온몸이 떨림.",
+  "상대방을 침대에 묶어두고 가죽 하네스로 지배하는 지극히 가학적인 사디즘 취향.\n[체액 성분] 침과 체액에 미량의 환각 미약 성분이 함유되어 있어 입맞춤만으로 상대를 애타게 만듦.",
+  "거친 대우나 통제를 받을 때 인외 고유의 피학적 마조히즘 쾌감이 극에 달함.\n[특이 반응] 절정에 도달하면 동공이 가늘어지며 종족 고유의 송곳니가 연인의 목덜미를 짓누름.",
+  "캡슐 제약의 진통제 BAAD에 노출되었을 때에만 인외 본능의 발정 스위치가 켜짐.\n[비밀 취향] 상대의 옷 위로 서서히 손을 뻗어 피부 접촉을 느낄 때의 긴장감을 즐김.",
+  "상대방에게 인외 고유의 냄새나 흔적을 새겨놓지 않으면 극심한 독점 불안증을 느낌.\n[민감 반응] 귓가에 조용히 소곤거리는 입김이나 목선에 닿는 거친 숨소리에 발정함.",
+  "종족관리처의 피임 마법 인장이 각인되어 있어 밤새도록 상대를 몰아붙여도 지치지 않는 강인한 체력.\n[잠자리 성향] 겉으로는 정중하고 다정하지만 침대 위에서는 사납게 주도권을 쥠.",
+  "스킨십을 나눌 때 체온이 기온보다 현저히 높아져 연인의 몸을 온기로 가득 채움.\n[신체 특성] 흥분할수록 피부 아래의 붉은 마법 문양이 화려하게 발광함.",
+  "상대방의 괴로워하는 소리나 흐느낌을 정기로 흡수하여 성적 만족감을 얻는 변종 몽마.\n[민감 부위] 허벅지 안쪽과 꼬리 뿌리 부분이 극도로 민감하여 손길만 닿아도 자극을 느낌.",
+  "상대의 신체를 마비시키는 체액을 보유하여 거부하는 상대를 부드럽게 무력화시킴.\n[비밀 취향] 관계 도중 상대를 안대로 가리고 자신의 인외 모습을 숨기는 비밀스러운 습관.",
+  "몸 전체가 약물 성분에 내성을 가져 강한 자극이 아니면 성적 흥분을 느끼지 못함.\n[특이 반응] 절정에 다다르면 종족 고유의 아름다운 날개나 깃털이 순간적으로 피어남."
+];
+
+const codePrefixes = ["SUBJECT", "CAPSULE", "AGENT", "EGNORE", "SPECIMEN", "DOSSIER", "UNIT", "PATIENT", "TARGET", "ASSET"];
+const nameSyllables1 = ["카", "루", "신", "아", "백", "이", "라", "녹", "주", "벨", "헤", "제", "레", "크", "비", "단", "솔", "시아", "류", "한", "연", "우", "민", "선", "태", "진", "영", "강", "하", "서"];
+const nameSyllables2 = ["엘", "온", "안", "에", "하", "아", "오", "린", "원", "리아", "도", "렌", "시아", "인", "윤", "율", "노아", "준", "현", "율", "혁", "우", "진", "찬", "호", "건", "경", "성", "재", "빈"];
+
+function generateCodeName() {
+  const pref = codePrefixes[Math.floor(Math.random() * codePrefixes.length)];
+  const num = Math.floor(1000 + Math.random() * 9000);
+  const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  const s1 = nameSyllables1[Math.floor(Math.random() * nameSyllables1.length)];
+  const s2 = nameSyllables2[Math.floor(Math.random() * nameSyllables2.length)];
+  return `${pref} #${s1}${s2} (${letter}-${num})`;
+}
+
+let currentPersona = {
+  code: '',
+  timestamp: '',
+  species: '',
+  job: '',
+  trait: '',
+  nsfw: ''
+};
+
+let locks = {
+  species: false,
+  job: false,
+  trait: false,
+  nsfw: false
+};
+
+let nsfwRevealed = false;
+let historyLog = [];
+
+function getRandomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function updateLockBadge() {
+  const lockedCount = Object.values(locks).filter(Boolean).length;
+  const badge = document.getElementById('lock-status-badge');
+  if (!badge) return;
+  if (lockedCount === 0) {
+    badge.textContent = 'ALL UNLOCKED';
+    badge.className = 'border border-border/50 bg-[#08080a] px-2 py-0.5 text-blood-bright font-bold';
+  } else if (lockedCount === 4) {
+    badge.textContent = 'ALL LOCKED';
+    badge.className = 'border border-blood bg-blood text-white font-bold';
+  } else {
+    badge.textContent = `${lockedCount} LOCKED`;
+    badge.className = 'border border-blood/60 bg-[#08080a] px-2 py-0.5 text-blood-bright font-bold';
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  const toastMsg = document.getElementById('toast-msg');
+  if (!toast || !toastMsg) return;
+  toastMsg.textContent = msg;
+  toast.classList.remove('hidden');
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }, 2200);
+}
+
+function initEncyclopedia() {
+  const countEl = document.getElementById('wiki-total-count');
+  const gridEl = document.getElementById('wiki-grid');
+  const searchInput = document.getElementById('wiki-search');
+
+  if (!countEl || !gridEl) return;
+  countEl.textContent = encyclopediaData.length;
+
+  function renderGrid(filterText = '') {
+    const filtered = encyclopediaData.filter(item => 
+      item.name.toLowerCase().includes(filterText.toLowerCase()) ||
+      item.desc.toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+      gridEl.innerHTML = '<p class="col-span-full text-center text-muted-foreground py-6 text-xs">일치하는 인외 종족이 없습니다.</p>';
+      return;
+    }
+
+    gridEl.innerHTML = filtered.map(item => `
+      <div class="glass-panel p-3.5 border-border/60 hover:border-blood transition-all flex flex-col justify-between gap-2">
+        <div>
+          <h4 class="font-serif font-bold text-xs text-foreground flex items-center gap-1.5 mb-1">
+            <span class="text-blood-bright">🧬</span> ${item.name}
+          </h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">${item.desc}</p>
+        </div>
+        <button type="button" onclick="selectSpeciesFromWiki('${item.name.replace(/'/g, "\\'")}')" class="mt-1 w-full border border-blood/40 bg-blood/10 py-1 text-[10px] font-bold text-blood-bright hover:bg-blood hover:text-white transition-colors">
+          🧬 이 종족으로 뽑기
+        </button>
+      </div>
+    `).join('');
+  }
+
+  if (searchInput) searchInput.addEventListener('input', (e) => renderGrid(e.target.value));
+  renderGrid();
+}
+
+function selectSpeciesFromWiki(speciesName) {
+  playSound('click');
+  
+  currentPersona.species = speciesName;
+  locks.species = true;
+  
+  const lockBtn = document.querySelector('[data-lock="species"]');
+  if (lockBtn) {
+    lockBtn.classList.add('bg-blood', 'text-white', 'border-blood');
+    lockBtn.classList.remove('text-muted-foreground');
+    const lockTxt = lockBtn.querySelector('.lock-txt');
+    if (lockTxt) lockTxt.textContent = '고정됨';
+  }
+  updateLockBadge();
+
+  generatePersona(false);
+  
+  const card = document.getElementById('dossier-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth' });
+  showToast(`🧬 '${speciesName}' 종족으로 고정 적용되었습니다!`);
+}
+
+function generatePersona(forceAll = false) {
+  playSound('generate');
+  const codeOpt = document.getElementById('opt-code-name');
+  const includeCodeName = codeOpt ? codeOpt.checked : true;
+
+  const genSpecies = document.getElementById('opt-gen-species')?.checked ?? true;
+  const genJob = document.getElementById('opt-gen-job')?.checked ?? true;
+  const genTrait = document.getElementById('opt-gen-trait')?.checked ?? true;
+  const genNsfw = document.getElementById('opt-gen-nsfw')?.checked ?? true;
+
+  if (includeCodeName) {
+    currentPersona.code = generateCodeName();
+  } else {
+    currentPersona.code = 'N/A (코드명 미지정)';
+  }
+
+  const now = new Date();
+  currentPersona.timestamp = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  if (genSpecies && (!locks.species || forceAll)) currentPersona.species = getRandomItem(speciesList);
+  if (genJob && (!locks.job || forceAll)) currentPersona.job = getRandomItem(jobList);
+  if (genTrait && (!locks.trait || forceAll)) currentPersona.trait = getRandomItem(traitList);
+  if (genNsfw && (!locks.nsfw || forceAll)) currentPersona.nsfw = getRandomItem(nsfwList);
+
+  renderPersonaUI();
+}
+
+function renderPersonaUI() {
+  const codeEl = document.getElementById('dossier-code');
+  const timeEl = document.getElementById('dossier-timestamp');
+  const speciesEl = document.getElementById('val-species');
+  const jobEl = document.getElementById('val-job');
+  const traitEl = document.getElementById('val-trait');
+  const nsfwEl = document.getElementById('val-nsfw');
+
+  if (codeEl) codeEl.textContent = currentPersona.code;
+  if (timeEl) timeEl.textContent = currentPersona.timestamp;
+  if (speciesEl) speciesEl.textContent = currentPersona.species;
+  if (jobEl) jobEl.textContent = currentPersona.job;
+  if (traitEl) traitEl.textContent = currentPersona.trait;
+  if (nsfwEl) nsfwEl.textContent = currentPersona.nsfw;
+
+  const card = document.getElementById('dossier-card');
+  if (card) {
+    card.classList.remove('fade-anim');
+    void card.offsetWidth;
+    card.classList.add('fade-anim');
+  }
+}
+
+function rerollField(field) {
+  playSound('click');
+  const codeOpt = document.getElementById('opt-code-name');
+  const includeCodeName = codeOpt ? codeOpt.checked : true;
+  if (field === 'code') {
+    currentPersona.code = includeCodeName ? generateCodeName() : 'N/A (코드명 미지정)';
+  }
+  if (field === 'species') currentPersona.species = getRandomItem(speciesList);
+  if (field === 'job') currentPersona.job = getRandomItem(jobList);
+  if (field === 'trait') currentPersona.trait = getRandomItem(traitList);
+  if (field === 'nsfw') currentPersona.nsfw = getRandomItem(nsfwList);
+  renderPersonaUI();
+}
+
+function toggleLock(field, btn) {
+  playSound('click');
+  locks[field] = !locks[field];
+  const lockTxt = btn.querySelector('.lock-txt');
+  if (locks[field]) {
+    btn.classList.add('bg-blood', 'text-white', 'border-blood');
+    btn.classList.remove('text-muted-foreground');
+    if (lockTxt) lockTxt.textContent = '고정됨';
+  } else {
+    btn.classList.remove('bg-blood', 'text-white', 'border-blood');
+    btn.classList.add('text-muted-foreground');
+    if (lockTxt) lockTxt.textContent = '고정';
+  }
+  updateLockBadge();
+}
+
+function copyFullProfile() {
+  if (!currentPersona.species) return;
+  playSound('copy');
+
+  const textToCopy = 
+`[ EGNORE · 페르소나 Dossier ]
+========================================
+■ 식별코드: ${currentPersona.code}
+■ 인외종족: ${currentPersona.species}
+■ 소속/직업: ${currentPersona.job}
+
+■ 캐릭터 프로필 & 상세 설정:
+${currentPersona.trait}
+
+■ NSFW / adult 성적 특성 설정:
+${currentPersona.nsfw}
+========================================
+* 추출 시각: ${currentPersona.timestamp}`;
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = textToCopy;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const success = document.execCommand("copy");
+    document.body.removeChild(textarea);
+
+    if (success) {
+      showToast('📋 프로필 전체가 클립보드에 복사되었습니다!');
+    }
+  } catch (err) {
+    showToast('복사에 실패했습니다.');
+  }
+}
+
+function saveToHistory() {
+  if (!currentPersona.species) return;
+  playSound('click');
+
+  const exists = historyLog.some(item => item.code === currentPersona.code && item.species === currentPersona.species);
+  if (!exists) {
+    historyLog.unshift({ ...currentPersona });
+    if (historyLog.length > 20) historyLog.pop();
+    updateHistoryUI();
+    showToast('💾 생성 기록에 저장되었습니다.');
+  } else {
+    showToast('이미 저장된 프로필입니다.');
+  }
+}
+
+function updateHistoryUI() {
+  const countEl = document.getElementById('history-count');
+  const listEl = document.getElementById('history-list');
+  if (countEl) countEl.textContent = historyLog.length;
+  if (!listEl) return;
+
+  if (historyLog.length === 0) {
+    listEl.innerHTML = '<p class="text-center text-muted-foreground py-8">저장되거나 생성된 프로필 기록이 없습니다.</p>';
+    return;
+  }
+
+  listEl.innerHTML = historyLog.map((item, idx) => `
+    <div class="glass-panel p-3 border-border/60 hover:border-blood transition-all flex flex-col gap-1.5">
+      <div class="flex justify-between items-center text-[10px] text-blood-bright font-bold">
+        <span>${item.code}</span>
+        <span class="text-muted-foreground">${item.timestamp}</span>
+      </div>
+      <div class="text-foreground font-semibold">${item.species} · <span class="text-xs font-normal text-muted-foreground">${item.job}</span></div>
+      <div class="flex gap-2 mt-1">
+        <button type="button" onclick="loadFromHistory(${idx})" class="border border-blood/40 bg-blood/20 px-2 py-0.5 text-[10px] text-blood-bright hover:bg-blood hover:text-white transition-colors">불러오기</button>
+        <button type="button" onclick="copyHistoryItem(${idx})" class="border border-border/40 px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors">텍스트 복사</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadFromHistory(idx) {
+  if (historyLog[idx]) {
+    currentPersona = { ...historyLog[idx] };
+    renderPersonaUI();
+
+    const modal = document.getElementById('history-modal');
+    if (modal) modal.classList.add('hidden');
+    showToast('기록에서 프로필을 불러왔습니다.');
+  }
+}
+
+function copyHistoryItem(idx) {
+  const item = historyLog[idx];
+  if (!item) return;
+  const text = `[EGNORE DOSSIER]\n코드: ${item.code}\n종족: ${item.species}\n직업: ${item.job}\n설정: ${item.trait}\nNSFW: ${item.nsfw}`;
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+  showToast('기록 항목이 복사되었습니다.');
+}
+
+const btnGen = document.getElementById('btn-generate');
+const btnCopyAll = document.getElementById('btn-copy-all');
+const btnSaveHistory = document.getElementById('btn-save-history');
+
+if (btnGen) btnGen.addEventListener('click', () => generatePersona(false));
+if (btnCopyAll) btnCopyAll.addEventListener('click', copyFullProfile);
+if (btnSaveHistory) btnSaveHistory.addEventListener('click', saveToHistory);
+
+const wikiBtn = document.getElementById('btn-toggle-encyclopedia');
+const wikiContent = document.getElementById('encyclopedia-content');
+const wikiIcon = document.getElementById('encyclopedia-toggle-icon');
+const wikiTxt = document.getElementById('encyclopedia-toggle-txt');
+
+if (wikiBtn && wikiContent) {
+  wikiBtn.addEventListener('click', () => {
+    playSound('click');
+    const isHidden = wikiContent.classList.contains('hidden');
+    if (isHidden) {
+      wikiContent.classList.remove('hidden');
+      if (wikiIcon) wikiIcon.textContent = '▲';
+      if (wikiTxt) wikiTxt.innerHTML = `인외대백과 닫기 (<span id="wiki-total-count">${encyclopediaData.length}</span>종)`;
+    } else {
+      wikiContent.classList.add('hidden');
+      if (wikiIcon) wikiIcon.textContent = '▼';
+      if (wikiTxt) wikiTxt.innerHTML = `인외대백과 열기 (<span id="wiki-total-count">${encyclopediaData.length}</span>종)`;
+    }
+  });
+}
+
+const codeOpt = document.getElementById('opt-code-name');
+if (codeOpt) {
+  codeOpt.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      if (currentPersona.code.startsWith('N/A')) {
+        currentPersona.code = generateCodeName();
+      }
+    } else {
+      currentPersona.code = 'N/A (코드명 미지정)';
+    }
+    const codeEl = document.getElementById('dossier-code');
+    if (codeEl) codeEl.textContent = currentPersona.code;
+  });
+}
+
+const nsfwOverlay = document.getElementById('nsfw-overlay');
+const nsfwToggleBtn = document.getElementById('btn-toggle-nsfw-view');
+const nsfwViewLabel = document.getElementById('nsfw-view-label');
+
+function toggleNSFWBlur(show) {
+  if (typeof show === 'boolean') {
+    nsfwRevealed = show;
+  } else {
+    nsfwRevealed = !nsfwRevealed;
+  }
+
+  if (nsfwOverlay && nsfwViewLabel) {
+    if (nsfwRevealed) {
+      nsfwOverlay.classList.add('opacity-0', 'pointer-events-none');
+      nsfwViewLabel.textContent = '모자이크 적용';
+    } else {
+      nsfwOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      nsfwViewLabel.textContent = '모자이크 해제';
+    }
+  }
+}
+
+if (nsfwOverlay) nsfwOverlay.addEventListener('click', () => toggleNSFWBlur(true));
+if (nsfwToggleBtn) nsfwToggleBtn.addEventListener('click', () => toggleNSFWBlur());
+
+const nsfwBlurOpt = document.getElementById('opt-nsfw-blur');
+if (nsfwBlurOpt) {
+  nsfwBlurOpt.addEventListener('change', (e) => {
+    toggleNSFWBlur(!e.target.checked);
+  });
+}
+
+document.querySelectorAll('.lock-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const field = btn.dataset.lock;
+    toggleLock(field, btn);
+  });
+});
+
+document.querySelectorAll('.reroll-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const field = btn.dataset.reroll;
+    rerollField(field);
+  });
+});
+
+const historyModal = document.getElementById('history-modal');
+const historyToggle = document.getElementById('history-toggle');
+const historyClose = document.getElementById('history-close');
+const historyBackdrop = document.getElementById('history-backdrop');
+const btnClearHistory = document.getElementById('btn-clear-history');
+
+if (historyToggle && historyModal) {
+  historyToggle.addEventListener('click', () => {
+    historyModal.classList.remove('hidden');
+    historyModal.classList.add('flex');
+  });
+}
+if (historyClose && historyModal) historyClose.addEventListener('click', () => historyModal.classList.add('hidden'));
+if (historyBackdrop && historyModal) historyBackdrop.addEventListener('click', () => historyModal.classList.add('hidden'));
+if (btnClearHistory) {
+  btnClearHistory.addEventListener('click', () => {
+    historyLog = [];
+    updateHistoryUI();
+    showToast('생성 기록이 삭제되었습니다.');
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initEncyclopedia();
+  generatePersona(true);
+});
+</script>
+</body>
+</html>
